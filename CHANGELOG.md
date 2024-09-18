@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 1.1.3
+- add support to black list
+
 ## 1.1.1
 - src: Use parsed url hostname instead of host which may contain also port
 
