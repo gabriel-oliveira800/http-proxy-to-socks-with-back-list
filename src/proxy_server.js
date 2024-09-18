@@ -6,6 +6,8 @@ const fs = require('fs');
 const Socks = require('socks');
 const { logger } = require('./logger');
 
+let DEFAULT_BACKLIST = ['https://www.thepiratebay3.co/'];
+
 function randomElement(array) {
   return array[Math.floor(Math.random() * array.length)];
 }
@@ -29,11 +31,23 @@ function parseProxyLine(line) {
   return getProxyObject.apply(this, proxyInfo);
 }
 
+function isBlacklisted(hostname) {
+  return DEFAULT_BACKLIST.includes(hostname);
+}
+
 function requestListener(getProxyInfo, request, response) {
   logger.info(`request: ${request.url}`);
 
   const proxy = getProxyInfo();
   const ph = url.parse(request.url);
+
+  if (isBlacklisted(ph.hostname)) {
+    logger.warn(`Blocked request to blacklisted domain: ${ph.hostname}`);
+    response.writeHead(403, { 'Content-Type': 'text/plain' });
+    response.end('Access to this domain is blocked\n');
+
+    return;
+  }
 
   const socksAgent = new Socks.Agent({
     proxy,
@@ -78,6 +92,15 @@ function connectListener(getProxyInfo, request, socketRequest, head) {
   const ph = url.parse(`http://${request.url}`);
   const { hostname: host, port } = ph;
 
+  // Verifique se o hostname está na blacklist
+  if (isBlacklisted(host)) {
+    logger.warn(`Blocked connection to blacklisted domain: ${host}`);
+    socketRequest.write(`HTTP/${request.httpVersion} 403 Connection blocked\r\n\r\n`);
+    socketRequest.end();
+
+    return;
+  }
+
   const options = {
     proxy,
     target: { host, port },
@@ -119,8 +142,10 @@ function connectListener(getProxyInfo, request, socketRequest, head) {
 }
 
 function ProxyServer(options) {
+  if (options.backList) DEFAULT_BACKLIST = [...DEFAULT_BACKLIST, ...options.backList];
+
   // TODO: start point
-  http.Server.call(this, () => {});
+  http.Server.call(this, () => { });
 
   this.proxyList = [];
 

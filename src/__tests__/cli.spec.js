@@ -8,6 +8,7 @@ describe('cli', () => {
         port: 'port',
         level: 'level',
         config: 'config',
+        backList: 'backList',
         FIELD_NOT_EXIST: 'FIELD_NOT_EXIST',
       };
 

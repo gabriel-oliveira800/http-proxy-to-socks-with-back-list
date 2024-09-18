@@ -8,6 +8,7 @@ const DEFAULT_OPTIONS = {
   port: 8080,
 };
 
+
 function createServer(opts) {
   const options = Object.assign({}, DEFAULT_OPTIONS, opts);
 
@@ -24,5 +25,5 @@ function createServer(opts) {
 }
 
 module.exports = {
-  createServer,
+  createServer
 };

@@ -10,6 +10,7 @@ const optionNames = [
   'level',
   'config',
   'host',
+  'backList',
 ];
 
 function getFileConfig(filePath) {
@@ -35,15 +36,18 @@ function getOptionsArgs(args) {
 
   optionNames.forEach((name) => {
     if (Object.hasOwnProperty.apply(args, [name])) {
-      if (typeof args[name] !== 'string') {
-        throw new Error(`string "${name}" expected`);
+      if (Array.isArray(args[name])) {
+        options[name] = args[name];
+      } else {
+        options[name] = args[name];
       }
-      options[name] = args[name];
     }
   });
 
   return options;
 }
+
+const commaSeparatedList = value => value.split(',');
 
 function main() {
   cli.version(version)
@@ -52,6 +56,7 @@ function main() {
     .option('-l, --host [host]', 'specify the listening host of http proxy server, default: 127.0.0.1')
     .option('-c, --config [config]', 'read configs from file in json format')
     .option('--level [level]', 'log level, vals: info, error')
+    .option('-b, --backList [backList]', 'specify the back list of http proxy server, default: []', commaSeparatedList)
     .parse(process.argv);
 
   const options = getOptionsArgs(cli);
